@@ -1,0 +1,49 @@
+body {
+  width: 400px;
+  margin: auto;
+  background: #eee;
+}
+
+#main {
+  background: white;
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+}
+
+.header {
+  text-align: center;
+  border-bottom: 1px solid grey;
+}
+
+.header h1 {
+  padding: 0.25em;
+  font-family: Helvetica neue;
+}
+
+.content-flow {
+  width: 100%;
+}
+
+.content-flow .detailed-photo {
+  padding: 0.25em;
+  border: 1px solid darkgrey;
+  background: white;
+}
+
+.content-flow .detailed-photo img {
+  width: 100%;
+}
+.content-flow .detailed-photo .photo-info {
+  text-align: left;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  font-style: italic;
+}
+
+.like-button {
+  color: pink;
+  cursor: pointer;
+}
+
+

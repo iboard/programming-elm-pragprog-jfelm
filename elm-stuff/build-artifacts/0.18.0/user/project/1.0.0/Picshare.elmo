@@ -1,6 +1,5 @@
-var _user$project$Picshare$baseUrl = 'https://s3.eu-central-1.amazonaws.com/iboard.core/static/';
-var _user$project$Picshare$imgUrl = function (img_name) {
-	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
+var _user$project$Picshare$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
 };
 var _user$project$Picshare$commentsHeader = function (model) {
 	return (_elm_lang$core$Native_Utils.cmp(
@@ -49,42 +48,100 @@ var _user$project$Picshare$update = F2(
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'ToggleLike':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{liked: !model.liked});
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{liked: !model.liked}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'SaveComment':
-				return _elm_lang$core$Native_Utils.eq(userInput, '') ? _elm_lang$core$Native_Utils.update(
-					model,
-					{newComment: ''}) : _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						comments: A2(
-							_elm_lang$core$Basics_ops['++'],
-							model.comments,
-							{
-								ctor: '::',
-								_0: userInput,
-								_1: {ctor: '[]'}
-							}),
-						newComment: ''
-					});
+				return _elm_lang$core$Native_Utils.eq(userInput, '') ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{newComment: ''}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							comments: A2(
+								_elm_lang$core$Basics_ops['++'],
+								model.comments,
+								{
+									ctor: '::',
+									_0: userInput,
+									_1: {ctor: '[]'}
+								}),
+							newComment: ''
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'UpdateComment':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{newComment: _p0._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			default:
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{newComment: _p0._0});
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$Picshare$Model = F5(
-	function (a, b, c, d, e) {
-		return {url: a, caption: b, liked: c, comments: d, newComment: e};
+var _user$project$Picshare$baseUrl = 'https://front-end-elm.surge.sh/';
+var _user$project$Picshare$imgUrl = function (img_name) {
+	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
+};
+var _user$project$Picshare$initialModel = {
+	id: 1,
+	url: _user$project$Picshare$imgUrl('1.jpg'),
+	liked: false,
+	caption: 'Sunrise',
+	comments: {ctor: '[]'},
+	newComment: ''
+};
+var _user$project$Picshare$Photo = F6(
+	function (a, b, c, d, e, f) {
+		return {id: a, url: b, caption: c, liked: d, comments: e, newComment: f};
 	});
-var _user$project$Picshare$initialModel = A5(
-	_user$project$Picshare$Model,
-	_user$project$Picshare$imgUrl('HackingBeautiful-774x179.png'),
-	'Hacking Beautiful Code',
-	false,
-	{ctor: '[]'},
-	'');
+var _user$project$Picshare$photoDecoder = A2(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$hardcoded,
+	'',
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'comments',
+		_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$string),
+		A3(
+			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+			'liked',
+			_elm_lang$core$Json_Decode$bool,
+			A3(
+				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+				'caption',
+				_elm_lang$core$Json_Decode$string,
+				A3(
+					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+					'url',
+					_elm_lang$core$Json_Decode$string,
+					A3(
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+						'id',
+						_elm_lang$core$Json_Decode$int,
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Picshare$Photo)))))));
+var _user$project$Picshare$LoadFeed = function (a) {
+	return {ctor: 'LoadFeed', _0: a};
+};
+var _user$project$Picshare$fetchFeed = A2(
+	_elm_lang$http$Http$send,
+	_user$project$Picshare$LoadFeed,
+	A2(
+		_elm_lang$http$Http$get,
+		A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, 'feed/1'),
+		_user$project$Picshare$photoDecoder));
+var _user$project$Picshare$init = {ctor: '_Tuple2', _0: _user$project$Picshare$initialModel, _1: _user$project$Picshare$fetchFeed};
 var _user$project$Picshare$UpdateComment = function (a) {
 	return {ctor: 'UpdateComment', _0: a};
 };
@@ -278,5 +335,5 @@ var _user$project$Picshare$view = function (model) {
 			}
 		});
 };
-var _user$project$Picshare$main = _elm_lang$html$Html$beginnerProgram(
-	{model: _user$project$Picshare$initialModel, view: _user$project$Picshare$view, update: _user$project$Picshare$update})();
+var _user$project$Picshare$main = _elm_lang$html$Html$program(
+	{init: _user$project$Picshare$init, view: _user$project$Picshare$view, update: _user$project$Picshare$update, subscriptions: _user$project$Picshare$subscriptions})();

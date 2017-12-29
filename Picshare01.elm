@@ -4,40 +4,77 @@ import Html exposing (Html, div, h1, h2, h3, text, img, i, b, ul, li, input, but
 import Html.Attributes exposing (class, src, placeholder, value)
 import Html.Events exposing (onClick, onSubmit, onInput)
 import Debug exposing (log)
+import Json.Decode exposing (Decoder, decodeString, bool, int, list, string)
+import Json.Decode.Pipeline exposing (decode, hardcoded, required)
+import Http
+
+baseUrl : String
+baseUrl = "https://front-end-elm.surge.sh/"
+
+imgUrl : String -> String
+imgUrl img_name = baseUrl ++ img_name
 
 type Msg
   = ToggleLike
   | SaveComment 
   | UpdateComment String
+  | LoadFeed (Result Http.Error Photo)
 
-type alias Model = 
-  { url : String
+type alias Id = Int
+
+type alias Photo = 
+  { id : Id
+  , url : String
   , caption : String
   , liked : Bool
-  , comments : (List String)
+  , comments : List String
   , newComment : String
   }
     
+type alias Model = Photo
 
-update : Msg -> Model -> Model
+
+photoDecoder : Decoder Photo
+photoDecoder = 
+  decode Photo
+  |> required "id" int
+  |> required "url" string
+  |> required "caption" string
+  |> required "liked" bool
+  |> required "comments" (list string)
+  |> hardcoded ""
+
+fetchFeed : Cmd Msg
+fetchFeed =
+  Http.get (baseUrl ++ "feed/1") photoDecoder
+  |> Http.send LoadFeed
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   let 
       userInput = model.newComment |> String.trim
   in
   case msg of
     ToggleLike ->
-      { model | liked = not model.liked }
+      ( { model | liked = not model.liked }
+      , Cmd.none
+      )
 
     SaveComment ->
       if userInput == "" then
-        { model | newComment = "" }
+        ( { model | newComment = "" }
+        , Cmd.none
+        )
       else
-        { model | comments = model.comments ++ [userInput],
-                  newComment = "" 
-        }
+        ( { model | comments = model.comments ++ [userInput], newComment = "" }
+        , Cmd.none
+        )
       
     UpdateComment comment ->
-      { model | newComment = comment }
+      ( { model | newComment = comment }, Cmd.none )
+
+    LoadFeed _ ->
+      ( model, Cmd.none )
 
 viewLoveButton : Model -> Html Msg
 viewLoveButton model =
@@ -94,15 +131,16 @@ viewDetailedPhoto model =
       , commentsForm model
       ]
 
-baseUrl : String
-baseUrl = "https://s3.eu-central-1.amazonaws.com/iboard.core/static/"
-
-imgUrl : String -> String
-imgUrl img_name = baseUrl ++ img_name
-
 
 initialModel : Model
-initialModel = Model (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautiful Code" False [] ""
+initialModel = {
+    id = 1
+  , url = imgUrl "1.jpg"
+  , liked = False
+  , caption = "Sunrise"
+  , comments = []
+  , newComment = ""
+  }
 
 view : Model -> Html Msg
 view model = 
@@ -113,12 +151,21 @@ view model =
             [ viewDetailedPhoto model ]
       ]
 
+init : (Model, Cmd Msg)
+init =
+  (initialModel, fetchFeed)
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
 main : Program Never Model Msg
 main =
-  Html.beginnerProgram
-     { model = initialModel
+  Html.program
+     { init = init
      , view = view
      , update = update
+     , subscriptions = subscriptions
      }
 
       --   viewDetailedPhoto (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautifyl Code",

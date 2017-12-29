@@ -1,24 +1,43 @@
 module Picshare exposing (main)
 
-import Html exposing (Html, div, h1, h2, text, img, i)
-import Html.Attributes exposing (class, src)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, h1, h2, h3, text, img, i, b, ul, li, input, button, form)
+import Html.Attributes exposing (class, src, placeholder, value)
+import Html.Events exposing (onClick, onSubmit, onInput)
+import Debug exposing (log)
 
 type Msg
   = ToggleLike
+  | SaveComment 
+  | UpdateComment String
 
 type alias Model = 
   { url : String
   , caption : String
   , liked : Bool
+  , comments : (List String)
+  , newComment : String
   }
     
 
 update : Msg -> Model -> Model
 update msg model =
+  let 
+      userInput = model.newComment |> String.trim
+  in
   case msg of
     ToggleLike ->
       { model | liked = not model.liked }
+
+    SaveComment ->
+      if userInput == "" then
+        { model | newComment = "" }
+      else
+        { model | comments = model.comments ++ [userInput],
+                  newComment = "" 
+        }
+      
+    UpdateComment comment ->
+      { model | newComment = comment }
 
 viewLoveButton : Model -> Html Msg
 viewLoveButton model =
@@ -37,6 +56,29 @@ viewLoveButton model =
        []
     
 
+viewComment : String -> Html msg
+viewComment comment =
+  li [ class "comment" ] 
+     [
+       b [] [text "Comment: "]
+     , text comment
+     ]
+
+commentsForm : Model -> Html Msg
+commentsForm model = 
+  form [ class "comments-form", onSubmit SaveComment ]
+      [
+        input [ onInput UpdateComment, placeholder "Add a comment", value model.newComment ] []
+      , button [ class "button" ] [ text "Commit" ]
+      ]
+
+commentsHeader : Model -> Html msg
+commentsHeader model =
+  if List.length(model.comments) > 0 then
+    h3 [class "comments"] [text "Comments"]
+  else
+    text ""
+
 viewDetailedPhoto : Model -> Html Msg
 viewDetailedPhoto model =
   div [ class "detailed-photo" ]
@@ -46,6 +88,10 @@ viewDetailedPhoto model =
             [ (viewLoveButton model) ]
       , div [ class "like-button" ] []
       , h2  [ class "caption" ] [ text model.caption ] 
+      , commentsHeader model
+      , ul  [ class "comments" ]
+            (List.map viewComment model.comments)
+      , commentsForm model
       ]
 
 baseUrl : String
@@ -56,7 +102,7 @@ imgUrl img_name = baseUrl ++ img_name
 
 
 initialModel : Model
-initialModel = Model (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautiful Code" False
+initialModel = Model (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautiful Code" False [] ""
 
 view : Model -> Html Msg
 view model = 

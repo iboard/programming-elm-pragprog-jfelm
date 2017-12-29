@@ -2,22 +2,141 @@ var _user$project$Picshare$baseUrl = 'https://s3.eu-central-1.amazonaws.com/iboa
 var _user$project$Picshare$imgUrl = function (img_name) {
 	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
 };
+var _user$project$Picshare$commentsHeader = function (model) {
+	return (_elm_lang$core$Native_Utils.cmp(
+		_elm_lang$core$List$length(model.comments),
+		0) > 0) ? A2(
+		_elm_lang$html$Html$h3,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('comments'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Comments'),
+			_1: {ctor: '[]'}
+		}) : _elm_lang$html$Html$text('');
+};
+var _user$project$Picshare$viewComment = function (comment) {
+	return A2(
+		_elm_lang$html$Html$li,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('comment'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$b,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Comment: '),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(comment),
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
+		var userInput = _elm_lang$core$String$trim(model.newComment);
 		var _p0 = msg;
-		return _elm_lang$core$Native_Utils.update(
-			model,
-			{liked: !model.liked});
+		switch (_p0.ctor) {
+			case 'ToggleLike':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{liked: !model.liked});
+			case 'SaveComment':
+				return _elm_lang$core$Native_Utils.eq(userInput, '') ? _elm_lang$core$Native_Utils.update(
+					model,
+					{newComment: ''}) : _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						comments: A2(
+							_elm_lang$core$Basics_ops['++'],
+							model.comments,
+							{
+								ctor: '::',
+								_0: userInput,
+								_1: {ctor: '[]'}
+							}),
+						newComment: ''
+					});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{newComment: _p0._0});
+		}
 	});
-var _user$project$Picshare$Model = F3(
-	function (a, b, c) {
-		return {url: a, caption: b, liked: c};
+var _user$project$Picshare$Model = F5(
+	function (a, b, c, d, e) {
+		return {url: a, caption: b, liked: c, comments: d, newComment: e};
 	});
-var _user$project$Picshare$initialModel = A3(
+var _user$project$Picshare$initialModel = A5(
 	_user$project$Picshare$Model,
 	_user$project$Picshare$imgUrl('HackingBeautiful-774x179.png'),
 	'Hacking Beautiful Code',
-	false);
+	false,
+	{ctor: '[]'},
+	'');
+var _user$project$Picshare$UpdateComment = function (a) {
+	return {ctor: 'UpdateComment', _0: a};
+};
+var _user$project$Picshare$SaveComment = {ctor: 'SaveComment'};
+var _user$project$Picshare$commentsForm = function (model) {
+	return A2(
+		_elm_lang$html$Html$form,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('comments-form'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onSubmit(_user$project$Picshare$SaveComment),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onInput(_user$project$Picshare$UpdateComment),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$placeholder('Add a comment'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$value(model.newComment),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('button'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Commit'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Picshare$ToggleLike = {ctor: 'ToggleLike'};
 var _user$project$Picshare$viewLoveButton = function (model) {
 	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
@@ -98,7 +217,26 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 								_0: _elm_lang$html$Html$text(model.caption),
 								_1: {ctor: '[]'}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _user$project$Picshare$commentsHeader(model),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$ul,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('comments'),
+										_1: {ctor: '[]'}
+									},
+									A2(_elm_lang$core$List$map, _user$project$Picshare$viewComment, model.comments)),
+								_1: {
+									ctor: '::',
+									_0: _user$project$Picshare$commentsForm(model),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
 					}
 				}
 			}

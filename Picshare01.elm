@@ -5,9 +5,7 @@ import Html.Attributes exposing (class, src)
 import Html.Events exposing (onClick)
 
 type Msg
-  = Like
-  | Unlike
-
+  = ToggleLike
 
 type alias Model = 
   { url : String
@@ -16,46 +14,39 @@ type alias Model =
   }
     
 
-update :
-  Msg
-  -> Model
-  -> Model
+update : Msg -> Model -> Model
 update msg model =
   case msg of
-    Like ->
-      { model | liked = True }
-    Unlike ->
-      { model | liked = False }
+    ToggleLike ->
+      { model | liked = not model.liked }
 
-viewDetailedPhoto : Model -> Html Msg
-viewDetailedPhoto model =
-  let 
+viewLoveButton : Model -> Html Msg
+viewLoveButton model =
+  let
       buttonClass =
         if model.liked then
           "fa-heart"
         else
           "fa-heart-o"
-      msg =
-        if model.liked then
-          Unlike
-        else
-          Like
   in
-      div [ class "detailed-photo" ]
-          [
-            img [ src model.url ] []
-          , div [ class "photo-info" ] 
-                [ div [ class "like-button" ] 
-                      [ i [ class "fa fa-2x" 
-                        , class buttonClass
-                        , onClick msg
-                        ]
-                        []
-                      ]
-                , h2 [ class "caption" ] [ text model.caption ] 
-                ]
-          ]
-  
+     i [ class "fa fa-2x" 
+        , class buttonClass
+        , class "like-button"
+        , onClick ToggleLike
+       ]
+       []
+    
+
+viewDetailedPhoto : Model -> Html Msg
+viewDetailedPhoto model =
+  div [ class "detailed-photo" ]
+      [
+        img [ src model.url ] []
+      , div [ class "photo-info" ] 
+            [ (viewLoveButton model) ]
+      , div [ class "like-button" ] []
+      , h2  [ class "caption" ] [ text model.caption ] 
+      ]
 
 baseUrl : String
 baseUrl = "https://s3.eu-central-1.amazonaws.com/iboard.core/static/"

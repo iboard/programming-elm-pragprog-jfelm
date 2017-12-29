@@ -8267,15 +8267,9 @@ var _user$project$Picshare$imgUrl = function (img_name) {
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		if (_p0.ctor === 'Like') {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{liked: true});
-		} else {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{liked: false});
-		}
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{liked: !model.liked});
 	});
 var _user$project$Picshare$Model = F3(
 	function (a, b, c) {
@@ -8286,11 +8280,31 @@ var _user$project$Picshare$initialModel = A3(
 	_user$project$Picshare$imgUrl('HackingBeautiful-774x179.png'),
 	'Hacking Beautiful Code',
 	false);
-var _user$project$Picshare$Unlike = {ctor: 'Unlike'};
-var _user$project$Picshare$Like = {ctor: 'Like'};
-var _user$project$Picshare$viewDetailedPhoto = function (model) {
-	var msg = model.liked ? _user$project$Picshare$Unlike : _user$project$Picshare$Like;
+var _user$project$Picshare$ToggleLike = {ctor: 'ToggleLike'};
+var _user$project$Picshare$viewLoveButton = function (model) {
 	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
+	return A2(
+		_elm_lang$html$Html$i,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('fa fa-2x'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class(buttonClass),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('like-button'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_user$project$Picshare$ToggleLike),
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		},
+		{ctor: '[]'});
+};
+var _user$project$Picshare$viewDetailedPhoto = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -8319,51 +8333,36 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 					},
 					{
 						ctor: '::',
+						_0: _user$project$Picshare$viewLoveButton(model),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('like-button'),
+							_1: {ctor: '[]'}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$div,
+							_elm_lang$html$Html$h2,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('like-button'),
+								_0: _elm_lang$html$Html_Attributes$class('caption'),
 								_1: {ctor: '[]'}
 							},
 							{
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$i,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('fa fa-2x'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class(buttonClass),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Events$onClick(msg),
-												_1: {ctor: '[]'}
-											}
-										}
-									},
-									{ctor: '[]'}),
+								_0: _elm_lang$html$Html$text(model.caption),
 								_1: {ctor: '[]'}
 							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$h2,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('caption'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(model.caption),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {ctor: '[]'}
+						_1: {ctor: '[]'}
+					}
+				}
 			}
 		});
 };

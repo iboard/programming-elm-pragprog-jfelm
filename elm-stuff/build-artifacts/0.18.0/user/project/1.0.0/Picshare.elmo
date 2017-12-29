@@ -42,6 +42,24 @@ var _user$project$Picshare$viewComment = function (comment) {
 			}
 		});
 };
+var _user$project$Picshare$saveComment = F2(
+	function (model, userInput) {
+		return _elm_lang$core$Native_Utils.eq(userInput, '') ? _elm_lang$core$Native_Utils.update(
+			model,
+			{newComment: ''}) : _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				comments: A2(
+					_elm_lang$core$Basics_ops['++'],
+					model.comments,
+					{
+						ctor: '::',
+						_0: userInput,
+						_1: {ctor: '[]'}
+					}),
+				newComment: ''
+			});
+	});
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
 		var userInput = _elm_lang$core$String$trim(model.newComment);
@@ -56,27 +74,9 @@ var _user$project$Picshare$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'SaveComment':
-				return _elm_lang$core$Native_Utils.eq(userInput, '') ? {
+				return {
 					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{newComment: ''}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				} : {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							comments: A2(
-								_elm_lang$core$Basics_ops['++'],
-								model.comments,
-								{
-									ctor: '::',
-									_0: userInput,
-									_1: {ctor: '[]'}
-								}),
-							newComment: ''
-						}),
+					_0: A2(_user$project$Picshare$saveComment, model, userInput),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'UpdateComment':

@@ -8,11 +8,19 @@ import Json.Decode exposing (Decoder, decodeString, bool, int, list, string)
 import Json.Decode.Pipeline exposing (decode, hardcoded, required)
 import Http
 
+
+-- --------------------------------------------------------------------
+-- Statics
+-- --------------------------------------------------------------------
 baseUrl : String
 baseUrl = "https://front-end-elm.surge.sh/"
 
 imgUrl : String -> String
 imgUrl img_name = baseUrl ++ img_name
+
+-- --------------------------------------------------------------------
+-- Types
+-- --------------------------------------------------------------------
 
 type Msg
   = ToggleLike
@@ -33,6 +41,9 @@ type alias Photo =
     
 type alias Model = Photo
 
+-- --------------------------------------------------------------------
+-- JSON and API
+-- --------------------------------------------------------------------
 
 photoDecoder : Decoder Photo
 photoDecoder = 
@@ -49,6 +60,18 @@ fetchFeed =
   Http.get (baseUrl ++ "feed/1") photoDecoder
   |> Http.send LoadFeed
 
+
+-- --------------------------------------------------------------------
+-- Message Handling
+-- --------------------------------------------------------------------
+
+saveComment : Model -> String -> Model
+saveComment model userInput =
+      if userInput == "" then
+        { model | newComment = "" }
+      else
+        { model | comments = model.comments ++ [userInput], newComment = "" }
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   let 
@@ -56,25 +79,20 @@ update msg model =
   in
   case msg of
     ToggleLike ->
-      ( { model | liked = not model.liked }
-      , Cmd.none
-      )
+      ( { model | liked = not model.liked }, Cmd.none )
 
     SaveComment ->
-      if userInput == "" then
-        ( { model | newComment = "" }
-        , Cmd.none
-        )
-      else
-        ( { model | comments = model.comments ++ [userInput], newComment = "" }
-        , Cmd.none
-        )
+      (saveComment model userInput, Cmd.none)
       
     UpdateComment comment ->
       ( { model | newComment = comment }, Cmd.none )
 
     LoadFeed _ ->
       ( model, Cmd.none )
+
+-- --------------------------------------------------------------------
+-- View
+-- --------------------------------------------------------------------
 
 viewLoveButton : Model -> Html Msg
 viewLoveButton model =
@@ -132,6 +150,18 @@ viewDetailedPhoto model =
       ]
 
 
+-- --------------------------------------------------------------------
+-- Subscriptions / Callbacks
+-- --------------------------------------------------------------------
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
+-- --------------------------------------------------------------------
+-- Application
+-- --------------------------------------------------------------------
+
 initialModel : Model
 initialModel = {
     id = 1
@@ -155,10 +185,6 @@ init : (Model, Cmd Msg)
 init =
   (initialModel, fetchFeed)
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-  Sub.none
-
 main : Program Never Model Msg
 main =
   Html.program
@@ -168,6 +194,3 @@ main =
      , subscriptions = subscriptions
      }
 
-      --   viewDetailedPhoto (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautifyl Code",
-      --   viewDetailedPhoto (imgUrl "andi_thinking.jpg")   "Thinking",
-      --   viewDetailedPhoto (imgUrl "yarb_Pulp-O-Mizer_Cover_Image.jpg")   "YARB"

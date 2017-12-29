@@ -8,10 +8,18 @@ type Msg
   = Like
   | Unlike
 
+
+type alias Model = 
+  { url : String
+  , caption : String
+  , liked : Bool
+  }
+    
+
 update :
   Msg
-  -> { url : String, caption : String, liked : Bool }
-  -> { url : String, caption : String, liked : Bool }
+  -> Model
+  -> Model
 update msg model =
   case msg of
     Like ->
@@ -19,7 +27,7 @@ update msg model =
     Unlike ->
       { model | liked = False }
 
-viewDetailedPhoto : { url : String, caption : String, liked : Bool } -> Html Msg
+viewDetailedPhoto : Model -> Html Msg
 viewDetailedPhoto model =
   let 
       buttonClass =
@@ -56,15 +64,10 @@ imgUrl : String -> String
 imgUrl img_name = baseUrl ++ img_name
 
 
-initialModel : { url : String, caption: String, liked : Bool }
-initialModel = 
-  { url = baseUrl ++ "andi_thinking.jpg"
-  , caption = "Thinking"
-  , liked = False
-  }
+initialModel : Model
+initialModel = Model (imgUrl "HackingBeautiful-774x179.png") "Hacking Beautiful Code" False
 
-
-view : { url : String, caption : String, liked : Bool } -> Html Msg
+view : Model -> Html Msg
 view model = 
   div [ class "header" ] 
       [ h1 [] 
@@ -73,7 +76,7 @@ view model =
             [ viewDetailedPhoto model ]
       ]
 
-main : Program Never { caption : String, liked : Bool, url : String } Msg
+main : Program Never Model Msg
 main =
   Html.beginnerProgram
      { model = initialModel

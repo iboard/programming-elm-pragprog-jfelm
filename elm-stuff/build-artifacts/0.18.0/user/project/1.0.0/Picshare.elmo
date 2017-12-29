@@ -2,11 +2,6 @@ var _user$project$Picshare$baseUrl = 'https://s3.eu-central-1.amazonaws.com/iboa
 var _user$project$Picshare$imgUrl = function (img_name) {
 	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
 };
-var _user$project$Picshare$initialModel = {
-	url: A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, 'andi_thinking.jpg'),
-	caption: 'Thinking',
-	liked: false
-};
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -20,6 +15,15 @@ var _user$project$Picshare$update = F2(
 				{liked: false});
 		}
 	});
+var _user$project$Picshare$Model = F3(
+	function (a, b, c) {
+		return {url: a, caption: b, liked: c};
+	});
+var _user$project$Picshare$initialModel = A3(
+	_user$project$Picshare$Model,
+	_user$project$Picshare$imgUrl('HackingBeautiful-774x179.png'),
+	'Hacking Beautiful Code',
+	false);
 var _user$project$Picshare$Unlike = {ctor: 'Unlike'};
 var _user$project$Picshare$Like = {ctor: 'Like'};
 var _user$project$Picshare$viewDetailedPhoto = function (model) {

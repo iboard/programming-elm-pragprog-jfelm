@@ -206,14 +206,16 @@ viewDetailedPhoto : Photo -> Html Msg
 viewDetailedPhoto photo =
   div [ class "detailed-photo" ]
       [
-        img [ src photo.url ] []
+        div [ class "like-button" ] [(viewLoveButton photo)]
+      , img [ src photo.url ] []
       , div [ class "photo-info" ] 
-            [ (viewLoveButton photo) ]
-      , div [ class "like-button" ] []
-      , h2  [ class "caption" ] [ text photo.caption ] 
-      , commentsHeader photo
-      , viewComments photo
-      , commentsForm photo
+            [ h2  [ class "caption" ] [ text photo.caption ] 
+            , div []
+                  [ commentsHeader photo
+                  , viewComments photo
+                  , commentsForm photo
+                  ]
+            ]
       ]
 
 
@@ -259,7 +261,7 @@ viewFeed : Maybe Feed -> Html Msg
 viewFeed maybeFeed =
   case maybeFeed of
     Just feed ->
-      div [] (List.map viewDetailedPhoto feed)
+      div [ class "photo-grid" ] (List.map viewDetailedPhoto feed)
     Nothing ->
       div [ class "loading-feed" ]
           [ text "Loading Feed ..." ]

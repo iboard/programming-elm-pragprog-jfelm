@@ -97,3 +97,13 @@ ul.comments li.comment {
   width: 5em;
 }
 
+.feed-error {
+  border: 1px solid red;
+  background : pink;
+  color: black;
+  padding: 1em;
+  text-align: left;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  margin-bottom: 2em;
+}

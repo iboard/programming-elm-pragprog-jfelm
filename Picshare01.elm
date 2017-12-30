@@ -45,6 +45,7 @@ type alias Feed =
 
 type alias Model =
   { feed : Maybe Feed
+  , error : Maybe Http.Error
   }
 
 -- --------------------------------------------------------------------
@@ -142,8 +143,8 @@ update msg model =
       , Cmd.none
       )
 
-    LoadFeed (Err _) ->
-      ( model, Cmd.none )
+    LoadFeed (Err error) ->
+      ( { model | error = Just error }, Cmd.none )
 
 
 -- --------------------------------------------------------------------
@@ -231,7 +232,28 @@ subscriptions model =
 initialModel : Model
 initialModel = 
   { feed = Nothing
+  , error = Nothing
   }
+
+errorMessage : Http.Error -> String
+errorMessage error =
+  case error of
+    Http.BadPayload _ _ ->
+      """Sorry, we couldn't process your feed at this time.
+      We're working on it!"""
+    _ ->
+      """Sorry, we couldn't load your feed at this time.
+      Please try again later."""
+
+viewContent : Model -> Html Msg
+viewContent model =
+  case model.error of
+    Just error ->
+      div [ class "feed-error" ]
+          [ text (errorMessage error) ]
+
+    Nothing ->
+      viewFeed model.feed
 
 viewFeed : Maybe Feed -> Html Msg
 viewFeed maybeFeed =
@@ -248,7 +270,7 @@ view model =
       [ h1 [] 
         [text "Picshare"]
       , div [ class "content-flow" ]
-            [ viewFeed model.feed ]
+            [ viewContent model ]
       ]
 
 init : (Model, Cmd Msg)

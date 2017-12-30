@@ -1,4 +1,12 @@
-var _user$project$Picshare$initialModel = {feed: _elm_lang$core$Maybe$Nothing};
+var _user$project$Picshare$errorMessage = function (error) {
+	var _p0 = error;
+	if (_p0.ctor === 'BadPayload') {
+		return 'Sorry, we couldn\'t process your feed at this time.\n      We\'re working on it!';
+	} else {
+		return 'Sorry, we couldn\'t load your feed at this time.\n      Please try again later.';
+	}
+};
+var _user$project$Picshare$initialModel = {feed: _elm_lang$core$Maybe$Nothing, error: _elm_lang$core$Maybe$Nothing};
 var _user$project$Picshare$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
@@ -99,15 +107,15 @@ var _user$project$Picshare$saveComment = function (photo) {
 };
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'ToggleLike':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							feed: A3(_user$project$Picshare$updateFeed, _user$project$Picshare$toggleLike, _p0._0, model.feed)
+							feed: A3(_user$project$Picshare$updateFeed, _user$project$Picshare$toggleLike, _p1._0, model.feed)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -119,8 +127,8 @@ var _user$project$Picshare$update = F2(
 						{
 							feed: A3(
 								_user$project$Picshare$updateFeed,
-								_user$project$Picshare$updateComment(_p0._1),
-								_p0._0,
+								_user$project$Picshare$updateComment(_p1._1),
+								_p1._0,
 								model.feed)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
@@ -131,23 +139,31 @@ var _user$project$Picshare$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							feed: A3(_user$project$Picshare$updateFeed, _user$project$Picshare$saveComment, _p0._0, model.feed)
+							feed: A3(_user$project$Picshare$updateFeed, _user$project$Picshare$saveComment, _p1._0, model.feed)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				if (_p0._0.ctor === 'Ok') {
+				if (_p1._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								feed: _elm_lang$core$Maybe$Just(_p0._0._0)
+								feed: _elm_lang$core$Maybe$Just(_p1._0._0)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								error: _elm_lang$core$Maybe$Just(_p1._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				}
 		}
 	});
@@ -183,9 +199,10 @@ var _user$project$Picshare$photoDecoder = A2(
 						'id',
 						_elm_lang$core$Json_Decode$int,
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Picshare$Photo)))))));
-var _user$project$Picshare$Model = function (a) {
-	return {feed: a};
-};
+var _user$project$Picshare$Model = F2(
+	function (a, b) {
+		return {feed: a, error: b};
+	});
 var _user$project$Picshare$LoadFeed = function (a) {
 	return {ctor: 'LoadFeed', _0: a};
 };
@@ -360,12 +377,12 @@ var _user$project$Picshare$viewDetailedPhoto = function (photo) {
 		});
 };
 var _user$project$Picshare$viewFeed = function (maybeFeed) {
-	var _p1 = maybeFeed;
-	if (_p1.ctor === 'Just') {
+	var _p2 = maybeFeed;
+	if (_p2.ctor === 'Just') {
 		return A2(
 			_elm_lang$html$Html$div,
 			{ctor: '[]'},
-			A2(_elm_lang$core$List$map, _user$project$Picshare$viewDetailedPhoto, _p1._0));
+			A2(_elm_lang$core$List$map, _user$project$Picshare$viewDetailedPhoto, _p2._0));
 	} else {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -379,6 +396,26 @@ var _user$project$Picshare$viewFeed = function (maybeFeed) {
 				_0: _elm_lang$html$Html$text('Loading Feed ...'),
 				_1: {ctor: '[]'}
 			});
+	}
+};
+var _user$project$Picshare$viewContent = function (model) {
+	var _p3 = model.error;
+	if (_p3.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('feed-error'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					_user$project$Picshare$errorMessage(_p3._0)),
+				_1: {ctor: '[]'}
+			});
+	} else {
+		return _user$project$Picshare$viewFeed(model.feed);
 	}
 };
 var _user$project$Picshare$view = function (model) {
@@ -410,7 +447,7 @@ var _user$project$Picshare$view = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Picshare$viewFeed(model.feed),
+						_0: _user$project$Picshare$viewContent(model),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}

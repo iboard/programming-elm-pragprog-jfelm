@@ -10,8 +10,9 @@ import Http
 
 
 -- --------------------------------------------------------------------
--- Statics
+-- Config
 -- --------------------------------------------------------------------
+
 baseUrl : String
 baseUrl = "https://front-end-elm.surge.sh/"
 
@@ -39,7 +40,9 @@ type alias Photo =
   , newComment : String
   }
     
-type alias Model =  Photo
+type alias Model =
+  { photo : Maybe Photo 
+  }
 
 -- --------------------------------------------------------------------
 -- JSON and API
@@ -65,28 +68,60 @@ fetchFeed =
 -- Message Handling
 -- --------------------------------------------------------------------
 
-saveComment : Model -> String -> Model
-saveComment model userInput =
-      if userInput == "" then
-        { model | newComment = "" }
+-- The following functions take a Photo as argument.
+-- The mapping from Maybe Photo to Photo is done by
+-- the functions at the end of this block
+
+saveComment : Photo -> Photo
+saveComment photo =
+      if photo.newComment == "" then
+        { photo | newComment = "" }
       else
-        { model | comments = model.comments ++ [userInput], newComment = "" }
+        { photo | comments = photo.comments ++ [photo.newComment], newComment = "" }
+
+toggleLike : Photo -> Photo
+toggleLike photo =
+  { photo | liked = not photo.liked }
+
+updateComment : String -> Photo -> Photo
+updateComment comment photo =
+  { photo | newComment = comment }
+
+-- ----------------------------
+-- MAPPING Maybe Photo to Photo
+-- ----------------------------
+
+updateFeed : (Photo -> Photo) -> Maybe Photo -> Maybe Photo
+updateFeed updatePhoto maybePhoto =
+  Maybe.map updatePhoto maybePhoto
+
+-- updateFeed calls updatePhoto when there is a Photo or
+-- returns a Maybe Photo if not.
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  let 
-      userInput = model.newComment |> String.trim
-  in
   case msg of
     ToggleLike ->
-      ( { model | liked = not model.liked }, Cmd.none )
+      ( { model 
+            | photo = updateFeed toggleLike model.photo
+        }
+      , Cmd.none 
+      )
+
+    UpdateComment comment ->
+      ( { model 
+            | photo = updateFeed (updateComment comment) model.photo
+        }
+      , Cmd.none
+      )
 
     SaveComment ->
-      (saveComment model userInput, Cmd.none)
+      ( { model
+          | photo = updateFeed saveComment model.photo
+        }
+      , Cmd.none
+      )
       
-    UpdateComment comment ->
-      ( { model | newComment = comment }, Cmd.none )
-
     LoadFeed _ ->
       ( model, Cmd.none )
 
@@ -94,7 +129,7 @@ update msg model =
 -- View
 -- --------------------------------------------------------------------
 
-viewLoveButton : Model -> Html Msg
+viewLoveButton : Photo -> Html Msg
 viewLoveButton model =
   let
       buttonClass =
@@ -119,13 +154,13 @@ viewComment comment =
      , text comment
      ]
 
-viewComments : Model -> Html Msg
-viewComments model =
+viewComments : Photo -> Html Msg
+viewComments photo =
   ul  [ class "comments" ]
-      (List.map viewComment model.comments)
+      (List.map viewComment photo.comments)
 
 
-commentsForm : Model -> Html Msg
+commentsForm : Photo -> Html Msg
 commentsForm model = 
   form [ class "comments-form", onSubmit SaveComment ]
       [
@@ -133,25 +168,25 @@ commentsForm model =
       , button [ class "button" ] [ text "Commit" ]
       ]
 
-commentsHeader : Model -> Html msg
+commentsHeader : Photo -> Html msg
 commentsHeader model =
   if List.length(model.comments) > 0 then
     h3 [class "comments"] [text "Comments"]
   else
     text ""
 
-viewDetailedPhoto : Model -> Html Msg
-viewDetailedPhoto model =
+viewDetailedPhoto : Photo -> Html Msg
+viewDetailedPhoto photo =
   div [ class "detailed-photo" ]
       [
-        img [ src model.url ] []
+        img [ src photo.url ] []
       , div [ class "photo-info" ] 
-            [ (viewLoveButton model) ]
+            [ (viewLoveButton photo) ]
       , div [ class "like-button" ] []
-      , h2  [ class "caption" ] [ text model.caption ] 
-      , commentsHeader model
-      , viewComments model
-      , commentsForm model
+      , h2  [ class "caption" ] [ text photo.caption ] 
+      , commentsHeader photo
+      , viewComments photo
+      , commentsForm photo
       ]
 
 
@@ -169,13 +204,24 @@ subscriptions model =
 
 initialModel : Model
 initialModel = 
-  { id = 1
-  , url = imgUrl "1.jpg"
-  , liked = False
-  , caption = "Sunrise"
-  , comments = []
-  , newComment = ""
+  { photo = 
+      Just
+        { id = 1
+        , url = imgUrl "1.jpg"
+        , liked = False
+        , caption = "Sunrise"
+        , comments = []
+        , newComment = ""
+        }
   }
+
+viewFeed : Maybe Photo -> Html Msg
+viewFeed maybePhoto =
+  case maybePhoto of
+    Just photo ->
+      viewDetailedPhoto photo
+    Nothing ->
+      text "no photo loaded yet."
 
 view : Model -> Html Msg
 view model = 
@@ -183,7 +229,7 @@ view model =
       [ h1 [] 
         [text "Picshare"]
       , div [ class "content-flow" ]
-            [ viewDetailedPhoto model ]
+            [ viewFeed model.photo ]
       ]
 
 init : (Model, Cmd Msg)

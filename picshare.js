@@ -9157,7 +9157,7 @@ var _user$project$Picshare$viewComment = function (comment) {
 			}
 		});
 };
-var _user$project$Picshare$viewComments = function (model) {
+var _user$project$Picshare$viewComments = function (photo) {
 	return A2(
 		_elm_lang$html$Html$ul,
 		{
@@ -9165,29 +9165,42 @@ var _user$project$Picshare$viewComments = function (model) {
 			_0: _elm_lang$html$Html_Attributes$class('comments'),
 			_1: {ctor: '[]'}
 		},
-		A2(_elm_lang$core$List$map, _user$project$Picshare$viewComment, model.comments));
+		A2(_elm_lang$core$List$map, _user$project$Picshare$viewComment, photo.comments));
 };
-var _user$project$Picshare$saveComment = F2(
-	function (model, userInput) {
-		return _elm_lang$core$Native_Utils.eq(userInput, '') ? _elm_lang$core$Native_Utils.update(
-			model,
-			{newComment: ''}) : _elm_lang$core$Native_Utils.update(
-			model,
-			{
-				comments: A2(
-					_elm_lang$core$Basics_ops['++'],
-					model.comments,
-					{
-						ctor: '::',
-						_0: userInput,
-						_1: {ctor: '[]'}
-					}),
-				newComment: ''
-			});
+var _user$project$Picshare$updateFeed = F2(
+	function (updatePhoto, maybePhoto) {
+		return A2(_elm_lang$core$Maybe$map, updatePhoto, maybePhoto);
 	});
+var _user$project$Picshare$updateComment = F2(
+	function (comment, photo) {
+		return _elm_lang$core$Native_Utils.update(
+			photo,
+			{newComment: comment});
+	});
+var _user$project$Picshare$toggleLike = function (photo) {
+	return _elm_lang$core$Native_Utils.update(
+		photo,
+		{liked: !photo.liked});
+};
+var _user$project$Picshare$saveComment = function (photo) {
+	return _elm_lang$core$Native_Utils.eq(photo.newComment, '') ? _elm_lang$core$Native_Utils.update(
+		photo,
+		{newComment: ''}) : _elm_lang$core$Native_Utils.update(
+		photo,
+		{
+			comments: A2(
+				_elm_lang$core$Basics_ops['++'],
+				photo.comments,
+				{
+					ctor: '::',
+					_0: photo.newComment,
+					_1: {ctor: '[]'}
+				}),
+			newComment: ''
+		});
+};
 var _user$project$Picshare$update = F2(
 	function (msg, model) {
-		var userInput = _elm_lang$core$String$trim(model.newComment);
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'ToggleLike':
@@ -9195,13 +9208,9 @@ var _user$project$Picshare$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{liked: !model.liked}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'SaveComment':
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_user$project$Picshare$saveComment, model, userInput),
+						{
+							photo: A2(_user$project$Picshare$updateFeed, _user$project$Picshare$toggleLike, model.photo)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'UpdateComment':
@@ -9209,7 +9218,22 @@ var _user$project$Picshare$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{newComment: _p0._0}),
+						{
+							photo: A2(
+								_user$project$Picshare$updateFeed,
+								_user$project$Picshare$updateComment(_p0._0),
+								model.photo)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'SaveComment':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							photo: A2(_user$project$Picshare$updateFeed, _user$project$Picshare$saveComment, model.photo)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -9221,12 +9245,15 @@ var _user$project$Picshare$imgUrl = function (img_name) {
 	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
 };
 var _user$project$Picshare$initialModel = {
-	id: 1,
-	url: _user$project$Picshare$imgUrl('1.jpg'),
-	liked: false,
-	caption: 'Sunrise',
-	comments: {ctor: '[]'},
-	newComment: ''
+	photo: _elm_lang$core$Maybe$Just(
+		{
+			id: 1,
+			url: _user$project$Picshare$imgUrl('1.jpg'),
+			liked: false,
+			caption: 'Sunrise',
+			comments: {ctor: '[]'},
+			newComment: ''
+		})
 };
 var _user$project$Picshare$Photo = F6(
 	function (a, b, c, d, e, f) {
@@ -9256,6 +9283,9 @@ var _user$project$Picshare$photoDecoder = A2(
 						'id',
 						_elm_lang$core$Json_Decode$int,
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Picshare$Photo)))))));
+var _user$project$Picshare$Model = function (a) {
+	return {photo: a};
+};
 var _user$project$Picshare$LoadFeed = function (a) {
 	return {ctor: 'LoadFeed', _0: a};
 };
@@ -9343,7 +9373,7 @@ var _user$project$Picshare$viewLoveButton = function (model) {
 		},
 		{ctor: '[]'});
 };
-var _user$project$Picshare$viewDetailedPhoto = function (model) {
+var _user$project$Picshare$viewDetailedPhoto = function (photo) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9357,7 +9387,7 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 				_elm_lang$html$Html$img,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$src(model.url),
+					_0: _elm_lang$html$Html_Attributes$src(photo.url),
 					_1: {ctor: '[]'}
 				},
 				{ctor: '[]'}),
@@ -9372,7 +9402,7 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Picshare$viewLoveButton(model),
+						_0: _user$project$Picshare$viewLoveButton(photo),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -9396,18 +9426,18 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(model.caption),
+								_0: _elm_lang$html$Html$text(photo.caption),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
 							ctor: '::',
-							_0: _user$project$Picshare$commentsHeader(model),
+							_0: _user$project$Picshare$commentsHeader(photo),
 							_1: {
 								ctor: '::',
-								_0: _user$project$Picshare$viewComments(model),
+								_0: _user$project$Picshare$viewComments(photo),
 								_1: {
 									ctor: '::',
-									_0: _user$project$Picshare$commentsForm(model),
+									_0: _user$project$Picshare$commentsForm(photo),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -9416,6 +9446,14 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 				}
 			}
 		});
+};
+var _user$project$Picshare$viewFeed = function (maybePhoto) {
+	var _p1 = maybePhoto;
+	if (_p1.ctor === 'Just') {
+		return _user$project$Picshare$viewDetailedPhoto(_p1._0);
+	} else {
+		return _elm_lang$html$Html$text('no photo loaded yet.');
+	}
 };
 var _user$project$Picshare$view = function (model) {
 	return A2(
@@ -9446,7 +9484,7 @@ var _user$project$Picshare$view = function (model) {
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Picshare$viewDetailedPhoto(model),
+						_0: _user$project$Picshare$viewFeed(model.photo),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}

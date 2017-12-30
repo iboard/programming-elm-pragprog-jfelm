@@ -1,7 +1,7 @@
 module Picshare exposing (main)
 
 import Html exposing (Html, div, h1, h2, h3, text, img, i, b, ul, li, input, button, form)
-import Html.Attributes exposing (class, src, placeholder, value)
+import Html.Attributes exposing (type_, class, src, placeholder, value)
 import Html.Events exposing (onClick, onSubmit, onInput)
 import Debug exposing (log)
 import Json.Decode exposing (Decoder, decodeString, bool, int, list, string)
@@ -24,9 +24,9 @@ imgUrl img_name = baseUrl ++ img_name
 -- --------------------------------------------------------------------
 
 type Msg
-  = ToggleLike
-  | SaveComment 
-  | UpdateComment String
+  = ToggleLike Id
+  | UpdateComment Id String
+  | SaveComment Id 
   | LoadFeed (Result Http.Error Feed)
 
 type alias Id = Int
@@ -94,9 +94,20 @@ updateComment comment photo =
 -- MAPPING Maybe Photo to Photo
 -- ----------------------------
 
-updateFeed : (Photo -> Photo) -> Maybe Photo -> Maybe Photo
-updateFeed updatePhoto maybePhoto =
-  Maybe.map updatePhoto maybePhoto
+updatePhotoById : (Photo -> Photo) -> Id -> Feed -> Feed
+updatePhotoById updatePhoto id feed =
+  List.map
+      (\photo ->
+        if photo.id == id then
+          updatePhoto photo
+        else
+          photo
+      )
+      feed
+
+updateFeed : (Photo -> Photo) -> Id -> Maybe Feed -> Maybe Feed
+updateFeed updatePhoto id maybeFeed =
+  Maybe.map (updatePhotoById updatePhoto id) maybeFeed
 
 -- updateFeed calls updatePhoto when there is a Photo or
 -- returns a Maybe Photo if not.
@@ -105,26 +116,26 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
   case msg of
 
-   -- ToggleLike ->
-   --   ( { model 
-   --         | photo = updateFeed toggleLike model.photo
-   --     }
-   --   , Cmd.none 
-   --   )
+    ToggleLike id ->
+      ( { model 
+            | feed = updateFeed toggleLike id model.feed
+        }
+      , Cmd.none 
+      )
 
-   -- UpdateComment comment ->
-   --   ( { model 
-   --         | photo = updateFeed (updateComment comment) model.photo
-   --     }
-   --   , Cmd.none
-   --   )
+    UpdateComment id comment ->
+      ( { model 
+            | feed = updateFeed (updateComment comment) id model.feed
+        }
+      , Cmd.none
+      )
 
-   -- SaveComment ->
-   --   ( { model
-   --       | photo = updateFeed saveComment model.photo
-   --     }
-   --   , Cmd.none
-   --   )
+    SaveComment id ->
+      ( { model
+          | feed = updateFeed saveComment id model.feed
+        }
+      , Cmd.none
+      )
       
     LoadFeed (Ok feed) ->
       ( { model | feed = Just feed }
@@ -134,17 +145,16 @@ update msg model =
     LoadFeed (Err _) ->
       ( model, Cmd.none )
 
-    _ -> (model, Cmd.none)
 
 -- --------------------------------------------------------------------
 -- View
 -- --------------------------------------------------------------------
 
 viewLoveButton : Photo -> Html Msg
-viewLoveButton model =
+viewLoveButton photo =
   let
       buttonClass =
-        if model.liked then
+        if photo.liked then
           "fa-heart"
         else
           "fa-heart-o"
@@ -152,7 +162,7 @@ viewLoveButton model =
      i [ class "fa fa-2x" 
         , class buttonClass
         , class "like-button"
-        -- , onClick ToggleLike
+        , onClick (ToggleLike photo.id)
        ]
        []
     
@@ -172,12 +182,15 @@ viewComments photo =
 
 
 commentsForm : Photo -> Html Msg
-commentsForm model = 
-  form [ class "comments-form", onSubmit SaveComment ]
+commentsForm photo = 
+  form [ class "comments-form", onSubmit (SaveComment photo.id) ]
       [
-        input [ 
-         -- onInput UpdateComment, 
-         placeholder "Add a comment", value model.newComment ] []
+        input 
+        [ type_ "text"
+        , placeholder "Add a comment" 
+        , value photo.newComment
+        , onInput (UpdateComment photo.id)
+        ] []
       , button [ class "button" ] [ text "Commit" ]
       ]
 

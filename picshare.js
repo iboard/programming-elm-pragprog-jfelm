@@ -9113,6 +9113,7 @@ var _elm_lang$http$Http$StringPart = F2(
 	});
 var _elm_lang$http$Http$stringPart = _elm_lang$http$Http$StringPart;
 
+var _user$project$Picshare$initialModel = {photo: _elm_lang$core$Maybe$Nothing};
 var _user$project$Picshare$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
@@ -9237,23 +9238,24 @@ var _user$project$Picshare$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				if (_p0._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								photo: _elm_lang$core$Maybe$Just(_p0._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 		}
 	});
-var _user$project$Picshare$baseUrl = 'https://front-end-elm.surge.sh/';
+var _user$project$Picshare$baseUrl = 'https://front-end-elm.com/';
 var _user$project$Picshare$imgUrl = function (img_name) {
 	return A2(_elm_lang$core$Basics_ops['++'], _user$project$Picshare$baseUrl, img_name);
-};
-var _user$project$Picshare$initialModel = {
-	photo: _elm_lang$core$Maybe$Just(
-		{
-			id: 1,
-			url: _user$project$Picshare$imgUrl('1.jpg'),
-			liked: false,
-			caption: 'Sunrise',
-			comments: {ctor: '[]'},
-			newComment: ''
-		})
 };
 var _user$project$Picshare$Photo = F6(
 	function (a, b, c, d, e, f) {
@@ -9452,7 +9454,18 @@ var _user$project$Picshare$viewFeed = function (maybePhoto) {
 	if (_p1.ctor === 'Just') {
 		return _user$project$Picshare$viewDetailedPhoto(_p1._0);
 	} else {
-		return _elm_lang$html$Html$text('no photo loaded yet.');
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('loading-feed'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Loading Feed ...'),
+				_1: {ctor: '[]'}
+			});
 	}
 };
 var _user$project$Picshare$view = function (model) {

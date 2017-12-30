@@ -14,7 +14,7 @@ import Http
 -- --------------------------------------------------------------------
 
 baseUrl : String
-baseUrl = "https://front-end-elm.surge.sh/"
+baseUrl = "https://front-end-elm.com/"
 
 imgUrl : String -> String
 imgUrl img_name = baseUrl ++ img_name
@@ -122,7 +122,12 @@ update msg model =
       , Cmd.none
       )
       
-    LoadFeed _ ->
+    LoadFeed (Ok photo) ->
+      ( { model | photo = Just photo }
+      , Cmd.none
+      )
+
+    LoadFeed (Err _) ->
       ( model, Cmd.none )
 
 -- --------------------------------------------------------------------
@@ -205,14 +210,7 @@ subscriptions model =
 initialModel : Model
 initialModel = 
   { photo = 
-      Just
-        { id = 1
-        , url = imgUrl "1.jpg"
-        , liked = False
-        , caption = "Sunrise"
-        , comments = []
-        , newComment = ""
-        }
+      Nothing
   }
 
 viewFeed : Maybe Photo -> Html Msg
@@ -221,7 +219,8 @@ viewFeed maybePhoto =
     Just photo ->
       viewDetailedPhoto photo
     Nothing ->
-      text "no photo loaded yet."
+      div [ class "loading-feed" ]
+          [ text "Loading Feed ..." ]
 
 view : Model -> Html Msg
 view model = 

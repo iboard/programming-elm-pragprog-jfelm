@@ -42,6 +42,16 @@ var _user$project$Picshare$viewComment = function (comment) {
 			}
 		});
 };
+var _user$project$Picshare$viewComments = function (model) {
+	return A2(
+		_elm_lang$html$Html$ul,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('comments'),
+			_1: {ctor: '[]'}
+		},
+		A2(_elm_lang$core$List$map, _user$project$Picshare$viewComment, model.comments));
+};
 var _user$project$Picshare$saveComment = F2(
 	function (model, userInput) {
 		return _elm_lang$core$Native_Utils.eq(userInput, '') ? _elm_lang$core$Native_Utils.update(
@@ -279,14 +289,7 @@ var _user$project$Picshare$viewDetailedPhoto = function (model) {
 							_0: _user$project$Picshare$commentsHeader(model),
 							_1: {
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$ul,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('comments'),
-										_1: {ctor: '[]'}
-									},
-									A2(_elm_lang$core$List$map, _user$project$Picshare$viewComment, model.comments)),
+								_0: _user$project$Picshare$viewComments(model),
 								_1: {
 									ctor: '::',
 									_0: _user$project$Picshare$commentsForm(model),

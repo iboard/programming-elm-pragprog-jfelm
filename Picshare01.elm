@@ -39,7 +39,7 @@ type alias Photo =
   , newComment : String
   }
     
-type alias Model = Photo
+type alias Model =  Photo
 
 -- --------------------------------------------------------------------
 -- JSON and API
@@ -119,6 +119,12 @@ viewComment comment =
      , text comment
      ]
 
+viewComments : Model -> Html Msg
+viewComments model =
+  ul  [ class "comments" ]
+      (List.map viewComment model.comments)
+
+
 commentsForm : Model -> Html Msg
 commentsForm model = 
   form [ class "comments-form", onSubmit SaveComment ]
@@ -144,8 +150,7 @@ viewDetailedPhoto model =
       , div [ class "like-button" ] []
       , h2  [ class "caption" ] [ text model.caption ] 
       , commentsHeader model
-      , ul  [ class "comments" ]
-            (List.map viewComment model.comments)
+      , viewComments model
       , commentsForm model
       ]
 
@@ -163,8 +168,8 @@ subscriptions model =
 -- --------------------------------------------------------------------
 
 initialModel : Model
-initialModel = {
-    id = 1
+initialModel = 
+  { id = 1
   , url = imgUrl "1.jpg"
   , liked = False
   , caption = "Sunrise"

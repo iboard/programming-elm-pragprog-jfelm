@@ -165,7 +165,13 @@ update msg model =
       ( model, Cmd.none)
 
     FlushStreamQueue ->
-      ( model, Cmd.none )
+      ( { model
+          | feed = Maybe.map ((++) model.streamQueue) model.feed
+          , streamQueue = []
+        }
+      , Cmd.none
+      )
+
 
 -- --------------------------------------------------------------------
 -- View

@@ -3,10 +3,11 @@ module Picshare exposing (main)
 import Html exposing (Html, div, h1, h2, h3, text, img, i, b, ul, li, input, button, form)
 import Html.Attributes exposing (type_, class, src, placeholder, value)
 import Html.Events exposing (onClick, onSubmit, onInput)
-import Debug exposing (log)
 import Json.Decode exposing (Decoder, decodeString, bool, int, list, string)
 import Json.Decode.Pipeline exposing (decode, hardcoded, required)
 import Http
+import WebSocket
+import Debug exposing (log)
 
 
 -- --------------------------------------------------------------------
@@ -19,6 +20,12 @@ baseUrl = "https://front-end-elm.com/"
 imgUrl : String -> String
 imgUrl img_name = baseUrl ++ img_name
 
+wsUrl : String
+wsUrl = 
+  "wss://programming-elm.com/"
+
+
+
 -- --------------------------------------------------------------------
 -- Types
 -- --------------------------------------------------------------------
@@ -28,6 +35,7 @@ type Msg
   | UpdateComment Id String
   | SaveComment Id 
   | LoadFeed (Result Http.Error Feed)
+  | LoadStreamPhoto String
 
 type alias Id = Int
 
@@ -146,6 +154,12 @@ update msg model =
     LoadFeed (Err error) ->
       ( { model | error = Just error }, Cmd.none )
 
+    LoadStreamPhoto data ->
+      let
+        _ =
+          Debug.log "WebSocket data" data
+      in
+       ( model, Cmd.none )
 
 -- --------------------------------------------------------------------
 -- View
@@ -225,7 +239,8 @@ viewDetailedPhoto photo =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+  WebSocket.listen wsUrl LoadStreamPhoto
+
 
 -- --------------------------------------------------------------------
 -- Application

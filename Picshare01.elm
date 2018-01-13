@@ -35,7 +35,8 @@ type Msg
   | UpdateComment Id String
   | SaveComment Id 
   | LoadFeed (Result Http.Error Feed)
-  | LoadStreamPhoto String
+  | LoadStreamPhoto (Result String Photo)
+  | FlushStreamQueue
 
 type alias Id = Int
 
@@ -54,6 +55,7 @@ type alias Feed =
 type alias Model =
   { feed : Maybe Feed
   , error : Maybe Http.Error
+  , streamQueue : Feed
   }
 
 -- --------------------------------------------------------------------
@@ -154,12 +156,16 @@ update msg model =
     LoadFeed (Err error) ->
       ( { model | error = Just error }, Cmd.none )
 
-    LoadStreamPhoto data ->
-      let
-        _ =
-          Debug.log "WebSocket data" data
-      in
-       ( model, Cmd.none )
+    LoadStreamPhoto (Ok photo) ->
+      ( { model | streamQueue = photo :: model.streamQueue }
+      , Cmd.none
+      )
+
+    LoadStreamPhoto (Err _) ->
+      ( model, Cmd.none)
+
+    FlushStreamQueue ->
+      ( model, Cmd.none )
 
 -- --------------------------------------------------------------------
 -- View
@@ -181,6 +187,22 @@ viewLoveButton photo =
        ]
        []
     
+viewStreamNotification : Feed -> Html Msg
+viewStreamNotification queue =
+  case queue of
+    [] ->
+      text ""
+
+    _ ->
+      let
+          content = 
+            "View new photos: " ++ (toString (List.length queue))
+      in
+          div
+            [ class "stream-notification"
+            , onClick FlushStreamQueue
+            ]
+            [ text content ]
 
 viewComment : String -> Html msg
 viewComment comment =
@@ -239,7 +261,12 @@ viewDetailedPhoto photo =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  WebSocket.listen wsUrl LoadStreamPhoto
+  case model.feed of
+    Just _ ->
+      WebSocket.listen wsUrl (LoadStreamPhoto << (decodeString photoDecoder))
+
+    Nothing ->
+      Sub.none
 
 
 -- --------------------------------------------------------------------
@@ -250,6 +277,7 @@ initialModel : Model
 initialModel = 
   { feed = Nothing
   , error = Nothing
+  , streamQueue = []
   }
 
 errorMessage : Http.Error -> String
@@ -270,7 +298,10 @@ viewContent model =
           [ text (errorMessage error) ]
 
     Nothing ->
-      viewFeed model.feed
+      div []
+          [ viewStreamNotification model.streamQueue
+          , viewFeed model.feed
+          ]
 
 viewFeed : Maybe Feed -> Html Msg
 viewFeed maybeFeed =
